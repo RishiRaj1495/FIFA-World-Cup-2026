@@ -4,7 +4,7 @@ Static reference data describing the venue.
 In a production deployment this would be backed by a venue-management
 database or a stadium's IoT/ticketing platform. For this submission it is
 an in-memory dataset so the whole system is runnable and testable with
-zero external dependencies beyond the Anthropic API key.
+zero external dependencies or configuration of any kind.
 """
 
 GATES = [

@@ -1,8 +1,11 @@
 """
 Application configuration.
 
-All tunables are pulled from environment variables so the same codebase
-can move from a laptop to a stadium ops server without code changes.
+Deliberately minimal: this application has no external service
+dependencies and no secrets, so there is nothing sensitive to configure.
+The only tunables are operational (CORS origins), pulled from environment
+variables so the same codebase can move from a laptop to a hosted
+deployment without code changes.
 """
 from functools import lru_cache
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -14,16 +17,10 @@ class Settings(BaseSettings):
     app_name: str = "Stadium Fan Concierge API"
     environment: str = "development"
 
-    # Anthropic API
-    anthropic_api_key: str = ""
-    anthropic_model: str = "claude-sonnet-4-6"
-    ai_max_tokens: int = 600
-    ai_request_timeout_seconds: int = 20
-
-    # CORS
+    # CORS — comma-separated list of allowed frontend origins.
     allowed_origins: str = "http://localhost:5173,http://127.0.0.1:5500,http://localhost:5500"
 
-    # Crowd simulation
+    # Crowd simulation refresh cadence, in seconds (used by the frontend polling interval).
     crowd_refresh_seconds: int = 15
 
     @property
@@ -33,5 +30,5 @@ class Settings(BaseSettings):
 
 @lru_cache
 def get_settings() -> Settings:
-    """Cached settings instance so .env is parsed only once per process."""
+    """Cached settings instance so environment variables are read only once per process."""
     return Settings()
