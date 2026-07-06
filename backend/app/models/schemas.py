@@ -6,8 +6,9 @@ is what lets services and routes evolve independently in a Clean
 Architecture layout: routes depend on schemas, services depend on schemas,
 neither depends on the other's internals.
 """
+
 from enum import Enum
-from typing import Optional
+
 from pydantic import BaseModel, Field, field_validator
 
 
@@ -34,8 +35,8 @@ class ChatRequest(BaseModel):
     message: str = Field(..., min_length=1, max_length=1000)
     language: Language = Language.ENGLISH
     accessibility_need: AccessibilityNeed = AccessibilityNeed.NONE
-    gate: Optional[str] = Field(default=None, max_length=20)
-    session_id: Optional[str] = Field(default=None, max_length=64)
+    gate: str | None = Field(default=None, max_length=20)
+    session_id: str | None = Field(default=None, max_length=64)
 
     @field_validator("message")
     @classmethod

@@ -11,9 +11,9 @@
   const CROWD_REFRESH_MS = 15000;
 
   const state = {
-    language: "en",
+    language: localStorage.getItem("fan_concierge_lang") || "en",
     accessibilityNeed: "none",
-    accessibilityMode: false,
+    accessibilityMode: localStorage.getItem("fan_concierge_acc_mode") === "true",
     sessionId: crypto.randomUUID(),
     lastGate: null,
   };
@@ -134,12 +134,24 @@
 
     const statsEl = document.createElement("div");
     statsEl.className = "gate-stats";
-    statsEl.innerHTML = `<strong>${LEVEL_LABELS[gate.crowd_level]}</strong><br/>~${gate.estimated_wait_minutes} min wait`;
+    const levelStrong = document.createElement("strong");
+    levelStrong.textContent = LEVEL_LABELS[gate.crowd_level];
+    statsEl.appendChild(levelStrong);
+    statsEl.appendChild(document.createElement("br"));
+    statsEl.appendChild(document.createTextNode(`~${gate.estimated_wait_minutes} min wait`));
 
     card.appendChild(idEl);
     card.appendChild(metaEl);
     card.appendChild(statsEl);
     return card;
+  }
+
+  function renderMessage(container, text, className) {
+    container.innerHTML = "";
+    const p = document.createElement("p");
+    if (className) p.className = className;
+    p.textContent = text;
+    container.appendChild(p);
   }
 
   async function refreshCrowdStatus() {
@@ -155,22 +167,32 @@
       els.crowdStatus.appendChild(note);
     } catch (error) {
       console.error(error);
-      els.crowdStatus.innerHTML = '<p class="hint">Unable to load gate status right now.</p>';
+      renderMessage(els.crowdStatus, "Unable to load gate status right now.", "hint");
     }
   }
 
   async function refreshAccessibilityInfo() {
     try {
       const info = await API.getAccessibilityInfo(state.accessibilityNeed);
-      const list = info.facilities.map((f) => `<li>${f}</li>`).join("");
-      els.accessibilityInfo.innerHTML = `
-        <ul>${list}</ul>
-        <p class="accessibility-note">${info.notes}</p>
-      `;
+      els.accessibilityInfo.innerHTML = "";
+
+      const list = document.createElement("ul");
+      info.facilities.forEach((facility) => {
+        const item = document.createElement("li");
+        item.textContent = facility;
+        list.appendChild(item);
+      });
+      els.accessibilityInfo.appendChild(list);
+
+      const note = document.createElement("p");
+      note.className = "accessibility-note";
+      note.textContent = info.notes;
+      els.accessibilityInfo.appendChild(note);
+
       state.lastGate = info.nearest_gate;
     } catch (error) {
       console.error(error);
-      els.accessibilityInfo.innerHTML = '<p class="hint">Unable to load accessibility info right now.</p>';
+      renderMessage(els.accessibilityInfo, "Unable to load accessibility info right now.", "hint");
     }
   }
 
@@ -178,15 +200,26 @@
     state.accessibilityMode = !state.accessibilityMode;
     document.body.classList.toggle("accessibility-mode", state.accessibilityMode);
     els.accessibilityToggle.setAttribute("aria-pressed", String(state.accessibilityMode));
+    localStorage.setItem("fan_concierge_acc_mode", String(state.accessibilityMode));
   }
 
   function init() {
+    // Sync UI elements with loaded settings
+    els.languageSelect.value = state.language;
+    document.documentElement.lang = state.language;
+    if (state.accessibilityMode) {
+      document.body.classList.add("accessibility-mode");
+      els.accessibilityToggle.setAttribute("aria-pressed", "true");
+    }
+
     appendMessage(WELCOME_MESSAGES[state.language], "concierge");
 
     els.chatForm.addEventListener("submit", handleChatSubmit);
 
     els.languageSelect.addEventListener("change", (e) => {
       state.language = e.target.value;
+      document.documentElement.lang = e.target.value;
+      localStorage.setItem("fan_concierge_lang", state.language);
     });
 
     els.accessibilitySelect.addEventListener("change", (e) => {

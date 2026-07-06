@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-from app.data.stadium_data import GATES, AMENITIES, MATCH_CONTEXT
+from app.data.stadium_data import AMENITIES, GATES, MATCH_CONTEXT
 
 router = APIRouter(prefix="/api/stadium", tags=["stadium"])
 

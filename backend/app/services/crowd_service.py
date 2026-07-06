@@ -11,11 +11,12 @@ analytics API is the only change needed to go from simulation to
 production, since everything downstream (recommendation logic, API
 response shape) depends only on the occupancy percentage.
 """
+
 import random
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from app.data.stadium_data import GATES
-from app.models.schemas import CrowdLevel, GateStatus, CrowdStatusResponse
+from app.models.schemas import CrowdLevel, CrowdStatusResponse, GateStatus
 
 # Bucket boundaries kept as named constants rather than magic numbers,
 # so the thresholds are easy to find and tune from one place.
@@ -59,7 +60,7 @@ def _read_occupancy(gate_id: str, minute_bucket: int) -> int:
 
 
 def get_crowd_status() -> CrowdStatusResponse:
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     minute_bucket = now.minute // 5
 
     gate_statuses: list[GateStatus] = []

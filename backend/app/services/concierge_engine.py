@@ -12,7 +12,8 @@ no configuration. It is the only reply path the chat endpoint uses, which
 keeps the whole assistant runnable and testable with nothing more than
 `pip install -r requirements.txt`.
 """
-from app.data.stadium_data import AMENITIES, ACCESSIBILITY_FACILITIES
+
+from app.data.stadium_data import ACCESSIBILITY_FACILITIES, AMENITIES
 from app.models.schemas import ChatRequest, ChatResponse, Language
 from app.services.crowd_service import get_crowd_status
 
@@ -21,67 +22,164 @@ from app.services.crowd_service import get_crowd_status
 # can mix languages or use the local word for something (e.g. "baño").
 INTENT_KEYWORDS: dict[str, list[str]] = {
     "restroom": [
-        "restroom", "toilet", "bathroom", "washroom",
-        "baño", "banheiro", "toilette",
-        "शौचालय", "बाथरूम",
-        "دورة مياه", "حمام",
+        "restroom",
+        "toilet",
+        "bathroom",
+        "washroom",
+        "baño",
+        "banheiro",
+        "toilette",
+        "शौचालय",
+        "बाथरूम",
+        "دورة مياه",
+        "حمام",
         "toiletten",
         "トイレ",
     ],
     "food": [
-        "food", "eat", "hungry", "snack", "drink", "concession",
-        "comida", "comer", "beber",
-        "manger", "boire",
-        "खाना", "भोजन",
-        "طعام", "أكل",
-        "essen", "trinken",
-        "食べ物", "食事",
+        "food",
+        "eat",
+        "hungry",
+        "snack",
+        "drink",
+        "concession",
+        "comida",
+        "comer",
+        "beber",
+        "manger",
+        "boire",
+        "खाना",
+        "भोजन",
+        "طعام",
+        "أكل",
+        "essen",
+        "trinken",
+        "食べ物",
+        "食事",
     ],
     "medical": [
-        "medical", "first aid", "emergency", "sick", "injury", "hurt",
-        "médico", "emergencia", "primeros auxilios",
-        "urgence", "premiers secours",
-        "चिकित्सा", "आपातकाल",
-        "طبي", "طوارئ", "إسعافات",
-        "medizinisch", "notfall",
-        "医療", "救急",
+        "medical",
+        "first aid",
+        "emergency",
+        "sick",
+        "injury",
+        "hurt",
+        "médico",
+        "emergencia",
+        "primeros auxilios",
+        "urgence",
+        "premiers secours",
+        "चिकित्सा",
+        "आपातकाल",
+        "طبي",
+        "طوارئ",
+        "إسعافات",
+        "medizinisch",
+        "notfall",
+        "医療",
+        "救急",
     ],
     "lost_and_found": [
-        "lost", "found", "missing item",
-        "perdido", "perdi",
-        "perdu", "objet trouvé",
-        "खोया", "गुम",
-        "مفقود", "ضائع",
-        "verloren", "fundbüro",
-        "忘れ物", "遺失物",
+        "lost",
+        "found",
+        "missing item",
+        "perdido",
+        "perdi",
+        "perdu",
+        "objet trouvé",
+        "खोया",
+        "गुम",
+        "مفقود",
+        "ضائع",
+        "verloren",
+        "fundbüro",
+        "忘れ物",
+        "遺失物",
     ],
     "transport": [
-        "transport", "shuttle", "bus", "parking", "taxi", "leave", "way home",
-        "transporte", "estacionamiento",
-        "transport", "stationnement", "navette",
-        "परिवहन", "पार्किंग",
-        "نقل", "موقف السيارات", "حافلة",
-        "transport", "parkplatz", "shuttlebus",
-        "交通", "駐車場", "シャトル",
+        "transport",
+        "shuttle",
+        "bus",
+        "parking",
+        "taxi",
+        "leave",
+        "way home",
+        "transporte",
+        "estacionamiento",
+        "transport",
+        "stationnement",
+        "navette",
+        "परिवहन",
+        "पार्किंग",
+        "نقل",
+        "موقف السيارات",
+        "حافلة",
+        "transport",
+        "parkplatz",
+        "shuttlebus",
+        "交通",
+        "駐車場",
+        "シャトル",
     ],
     "accessibility": [
-        "wheelchair", "accessible", "accessibility", "hearing", "vision",
-        "sensory", "disability", "sign language",
-        "silla de ruedas", "accesible", "discapacidad",
-        "fauteuil roulant", "accessible", "handicap",
-        "व्हीलचेयर", "सुगम्यता", "विकलांगता",
-        "كرسي متحرك", "إعاقة", "الوصول",
-        "rollstuhl", "barrierefrei", "behinderung",
-        "車椅子", "アクセシビリティ", "障害",
+        "wheelchair",
+        "accessible",
+        "accessibility",
+        "hearing",
+        "vision",
+        "sensory",
+        "disability",
+        "sign language",
+        "silla de ruedas",
+        "accesible",
+        "discapacidad",
+        "fauteuil roulant",
+        "accessible",
+        "handicap",
+        "व्हीलचेयर",
+        "सुगम्यता",
+        "विकलांगता",
+        "كرسي متحرك",
+        "إعاقة",
+        "الوصول",
+        "rollstuhl",
+        "barrierefrei",
+        "behinderung",
+        "車椅子",
+        "アクセシビリティ",
+        "障害",
     ],
     "gate_wait": [
-        "gate", "queue", "line", "wait", "entrance", "crowd", "busy", "fastest",
-        "puerta", "entrada", "cola", "espera",
-        "porte", "entrée", "file", "attente",
-        "गेट", "प्रवेश", "कतार", "प्रतीक्षा",
-        "بوابة", "دخول", "طابور", "انتظار",
-        "tor", "eingang", "warteschlange",
-        "ゲート", "入口", "待ち時間",
+        "gate",
+        "queue",
+        "line",
+        "wait",
+        "entrance",
+        "crowd",
+        "busy",
+        "fastest",
+        "puerta",
+        "entrada",
+        "cola",
+        "espera",
+        "porte",
+        "entrée",
+        "file",
+        "attente",
+        "गेट",
+        "प्रवेश",
+        "कतार",
+        "प्रतीक्षा",
+        "بوابة",
+        "دخول",
+        "طابور",
+        "انتظار",
+        "tor",
+        "eingang",
+        "warteschlange",
+        "ゲート",
+        "入口",
+        "待ち時間",
     ],
 }
 
@@ -115,26 +213,55 @@ def _detect_intent(message_lower: str) -> str:
     return "unknown"
 
 
+def _restroom_fact(_: ChatRequest) -> str:
+    return AMENITIES["restrooms"]
+
+
+def _food_fact(_: ChatRequest) -> str:
+    return AMENITIES["food"]
+
+
+def _medical_fact(_: ChatRequest) -> str:
+    return AMENITIES["medical"]
+
+
+def _lost_and_found_fact(_: ChatRequest) -> str:
+    return AMENITIES["lost_and_found"]
+
+
+def _transport_fact(_: ChatRequest) -> str:
+    return AMENITIES["transport"]
+
+
+def _accessibility_fact(request: ChatRequest) -> str:
+    facilities = ACCESSIBILITY_FACILITIES.get(
+        request.accessibility_need.value, ACCESSIBILITY_FACILITIES["none"]
+    )
+    return " ".join(facilities)
+
+
+def _gate_wait_fact(_: ChatRequest) -> str:
+    return get_crowd_status().recommendation_reason
+
+
+# Dispatch table mapping each intent to the function that resolves its
+# venue facts. Adding a new intent is then a two-step, additive change:
+# add keywords to INTENT_KEYWORDS, add an entry here — no branching logic
+# to modify.
+INTENT_FACT_RESOLVERS = {
+    "restroom": _restroom_fact,
+    "food": _food_fact,
+    "medical": _medical_fact,
+    "lost_and_found": _lost_and_found_fact,
+    "transport": _transport_fact,
+    "accessibility": _accessibility_fact,
+    "gate_wait": _gate_wait_fact,
+}
+
+
 def _fact_for_intent(intent: str, request: ChatRequest) -> str:
-    if intent == "restroom":
-        return AMENITIES["restrooms"]
-    if intent == "food":
-        return AMENITIES["food"]
-    if intent == "medical":
-        return AMENITIES["medical"]
-    if intent == "lost_and_found":
-        return AMENITIES["lost_and_found"]
-    if intent == "transport":
-        return AMENITIES["transport"]
-    if intent == "accessibility":
-        facilities = ACCESSIBILITY_FACILITIES.get(
-            request.accessibility_need.value, ACCESSIBILITY_FACILITIES["none"]
-        )
-        return " ".join(facilities)
-    if intent == "gate_wait":
-        status = get_crowd_status()
-        return status.recommendation_reason
-    return ""
+    resolver = INTENT_FACT_RESOLVERS.get(intent)
+    return resolver(request) if resolver else ""
 
 
 def _extract_suggested_actions(reply_text: str) -> list[str]:

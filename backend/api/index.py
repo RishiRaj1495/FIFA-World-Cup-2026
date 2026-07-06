@@ -6,4 +6,5 @@ Vercel's Python runtime looks for an ASGI-compatible `app` object under
 FastAPI app used for local development, so behavior is identical in both
 environments.
 """
+
 from app.main import app  # noqa: F401

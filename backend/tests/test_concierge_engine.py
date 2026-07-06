@@ -1,5 +1,5 @@
-from app.models.schemas import ChatRequest, Language, AccessibilityNeed
-from app.services.concierge_engine import get_chat_reply, _detect_intent
+from app.models.schemas import AccessibilityNeed, ChatRequest, Language
+from app.services.concierge_engine import _detect_intent, get_chat_reply
 
 
 def test_detect_intent_restroom_english():
@@ -49,7 +49,9 @@ def test_get_chat_reply_localizes_intro_and_unknown_phrase():
 
 
 def test_get_chat_reply_gate_wait_uses_live_crowd_data():
-    response = get_chat_reply(ChatRequest(message="Which gate is fastest right now?", language=Language.ENGLISH))
+    response = get_chat_reply(
+        ChatRequest(message="Which gate is fastest right now?", language=Language.ENGLISH)
+    )
     assert "gate" in response.reply.lower()
     assert "view_crowd_status" in response.suggested_actions
 

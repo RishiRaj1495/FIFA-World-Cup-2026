@@ -1,10 +1,10 @@
-from app.services.crowd_service import (
-    get_crowd_status,
-    get_best_accessible_gate,
-    _level_from_occupancy,
-    _estimated_wait_minutes,
-)
 from app.models.schemas import CrowdLevel
+from app.services.crowd_service import (
+    _estimated_wait_minutes,
+    _level_from_occupancy,
+    get_best_accessible_gate,
+    get_crowd_status,
+)
 
 
 def test_level_from_occupancy_boundaries():
