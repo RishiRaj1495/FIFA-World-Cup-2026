@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 
 from app.models.schemas import ChatRequest, ChatResponse
-from app.services.ai_service import get_chat_reply
+from app.services.concierge_engine import get_chat_reply
 
 router = APIRouter(prefix="/api/chat", tags=["chat"])
 
