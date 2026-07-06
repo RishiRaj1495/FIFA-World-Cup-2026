@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Fan Concierge — FIFA World Cup 2026 Stadium Assistant</title>
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <div class="app" id="app">
+
+    <header class="topbar">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true">&#9917;</span>
+        <div>
+          <h1>Fan Concierge</h1>
+          <p class="subtitle">Smart Stadium Assistant · FIFA World Cup 2026</p>
+        </div>
+      </div>
+
+      <div class="topbar-controls">
+        <label class="visually-hidden" for="language-select">Language</label>
+        <select id="language-select" aria-label="Select language">
+          <option value="en">English</option>
+          <option value="es">Español</option>
+          <option value="pt">Português</option>
+          <option value="fr">Français</option>
+          <option value="hi">हिन्दी</option>
+          <option value="ar">العربية</option>
+          <option value="de">Deutsch</option>
+          <option value="ja">日本語</option>
+        </select>
+
+        <button id="accessibility-toggle" class="icon-button" aria-pressed="false"
+          title="Toggle accessibility mode">
+          Accessibility Mode
+        </button>
+      </div>
+    </header>
+
+    <main class="layout">
+
+      <section class="panel chat-panel" aria-label="Chat with Fan Concierge">
+        <div class="panel-header">
+          <h2>Ask Fan Concierge</h2>
+          <p class="hint">Ask about gates, restrooms, food, transport, or accessibility — in your language.</p>
+        </div>
+
+        <div id="chat-log" class="chat-log" role="log" aria-live="polite"></div>
+
+        <div id="quick-actions" class="quick-actions" aria-label="Quick actions"></div>
+
+        <form id="chat-form" class="chat-form" autocomplete="off">
+          <label class="visually-hidden" for="chat-input">Type your question</label>
+          <input
+            id="chat-input"
+            type="text"
+            placeholder="e.g. Where's the nearest accessible restroom?"
+            maxlength="1000"
+            required
+          />
+          <button type="submit" id="send-button">Send</button>
+        </form>
+      </section>
+
+      <section class="panel side-panel">
+        <div class="panel-header">
+          <h2>Live Gate Status</h2>
+          <p class="hint">Updates automatically. Pick the gate with the shortest wait.</p>
+        </div>
+        <div id="crowd-status" class="crowd-status" aria-live="polite">Loading gate data…</div>
+
+        <div class="panel-header accessibility-header">
+          <h2>Accessibility</h2>
+          <label class="visually-hidden" for="accessibility-select">Accessibility need</label>
+          <select id="accessibility-select" aria-label="Select accessibility need">
+            <option value="none">No specific need</option>
+            <option value="wheelchair">Wheelchair access</option>
+            <option value="low_vision">Low vision</option>
+            <option value="hearing_impaired">Hearing impaired</option>
+            <option value="cognitive_support">Cognitive support / sensory</option>
+          </select>
+        </div>
+        <div id="accessibility-info" class="accessibility-info">Select a need above to see relevant facilities.</div>
+      </section>
+
+    </main>
+
+    <footer class="footer">
+      <p>Demo build — venue data is illustrative. Built for the Smart Stadiums &amp; Tournament Operations challenge.</p>
+    </footer>
+  </div>
+
+  <script src="js/api.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
