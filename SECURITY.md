@@ -2,13 +2,13 @@
 
 This project has no external service dependencies and no secrets to
 manage. The practices below are what's actually implemented in the code,
-not aspirational — each one is backed by an automated test.
+not aspirational - each one is backed by an automated test.
 
 ## No credentials, anywhere
 
 There is no API key, token, or credential of any kind in this codebase.
 The concierge (`app/services/concierge_engine.py`) runs entirely
-in-process. This isn't just a convenience — it removes an entire class of
+in-process. This isn't just a convenience - it removes an entire class of
 risk (leaked keys, misconfigured secrets, third-party outages) by
 construction rather than by careful handling.
 
@@ -60,5 +60,4 @@ keyword matching against a fixed, developer-authored dictionary
 
 ## Reporting an issue
 
-This is a hackathon submission without a maintained release cycle. If you
-find an issue while reviewing it, please open a GitHub issue on the repo.
+If you find an issue while reviewing it, please open a GitHub issue on the repo.
