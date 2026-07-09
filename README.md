@@ -1,15 +1,43 @@
-# Fan Concierge — Smart Stadium Assistant for FIFA World Cup 2026
-
-![CI](https://github.com/RishiRaj1495/FIFA-World-Cup-2026/actions/workflows/ci.yml/badge.svg)
+# Fan Concierge - Smart Stadium Assistant for FIFA World Cup 2026
 
 A multilingual concierge and crowd-intelligence system built for
 **Challenge 4: Smart Stadiums & Tournament Operations**. It targets fans
 and venue staff during matchday, combining an AI-driven multilingual chat
-assistant with real-time gate crowd status and accessibility guidance.
+assistant with real-time gate crowd status and accessibility guidance —
+live, working, and running end to end.
 
 **Runs entirely standalone.** No external services, no signup, no
-configuration, no keys of any kind — clone it, install one dependency
+configuration, no keys of any kind - clone it, install one dependency
 file, and every feature works immediately.
+
+**Live demo:** https://fifa-world-cup-2026-jtyk.vercel.app/
+**Backend API:** https://fifa-world-cup-2026-eight-omega.vercel.app/api/health
+
+---
+
+## Problem statement coverage
+
+Challenge 4 lists eight possible areas a submission can target: navigation,
+crowd management, accessibility, transportation, sustainability,
+multilingual assistance, operational intelligence, and real-time decision
+support. Rather than touching all eight shallowly, this project goes deep
+on the five most connected to the actual moment of friction on matchday -
+the 90 minutes before kickoff, when a fan has to find their way, in their
+language, through a crowd, to a gate that suits their needs:
+
+| Challenge area | How this project addresses it |
+|---|---|
+| **Multilingual assistance** | Chat concierge answers in 8 languages (English, Spanish, Portuguese, French, Hindi, Arabic, German, Japanese), detected from what the fan actually typed |
+| **Crowd management** | Live per-gate occupancy simulation, bucketed into low/moderate/high/critical, refreshed automatically, with an explicit lowest-occupancy recommendation |
+| **Navigation** | The concierge and the live dashboard always agree on which gate to recommend, so a fan gets one consistent answer whether they ask in chat or read the dashboard |
+| **Accessibility** | Dedicated accessibility-need selector (wheelchair, low vision, hearing impaired, cognitive/sensory support) that returns relevant facilities *and* factors accessibility into the gate recommendation itself |
+| **Real-time decision support** | Every recommendation (gate to use, accessible gate to use) is computed live from current occupancy data, not static — this is the throughline connecting all three assistant surfaces (chat, dashboard, accessibility panel) |
+
+Transportation, sustainability, and operational intelligence are
+acknowledged as valid directions for this challenge but were deliberately
+left out of scope here, in favor of doing the chosen five thoroughly
+rather than eight superficially - see [Assumptions made](#assumptions-made)
+for how the architecture leaves room to extend into them later.
 
 ## Chosen vertical
 
@@ -37,7 +65,8 @@ Three pieces of logic work together:
    accessibility features). Because replies are always built from this
    fixed dataset rather than invented, they can never contradict the actual
    venue — grounding matters a lot when the answer affects where a fan
-   physically walks.
+   physically walks. Recognized intents: restrooms, food, medical/first
+   aid, lost & found, transport, accessibility, and gate/wait times.
 
 2. **Crowd intelligence (decision support).** Each gate has a simulated,
    time-bucketed occupancy reading (a stand-in for a real turnstile/camera
@@ -60,14 +89,18 @@ dashboard shows.
 ## How the solution works
 
 ```
-frontend/ (vanilla HTML/CSS/JS, no build step)
+frontend/ 
    │  language + accessibility selectors, chat UI, live gate dashboard
+   │  auto-detects local vs. deployed backend URL — no manual config
    ▼
-backend/app/main.py  (FastAPI, CORS)
+backend/app/main.py  
    ├── routes/chat.py            → services/concierge_engine.py
    ├── routes/crowd.py           → services/crowd_service.py
    ├── routes/accessibility.py   → services/crowd_service.py + data/stadium_data.py
    └── routes/stadium.py         → data/stadium_data.py
+
+core/rate_limit.py        — in-memory rate limiter, proxy-aware (X-Forwarded-For)
+core/security_headers.py  — standard defensive HTTP headers on every response
 ```
 
 This follows a Clean Architecture layering: **routes** only parse/validate
@@ -92,16 +125,18 @@ without spinning up HTTP.
   the moment `pip install -r requirements.txt` finishes.
 - **Defense-in-depth security practices**, all covered by tests (see
   `SECURITY.md` for details): strict input validation on every request,
-  origin-restricted CORS, an in-memory rate limiter on `/api/chat` (30
-  requests/60s per client), and standard security response headers
-  (`X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`,
-  `Permissions-Policy`).
-- 31 automated tests (`pytest`) covering crowd-level bucketing logic, gate
+  origin-restricted CORS, a proxy-aware in-memory rate limiter on
+  `/api/chat` (30 requests/60s per client, with automatic cleanup of
+  expired entries so memory usage stays bounded), and standard security
+  response headers (`X-Content-Type-Options`, `X-Frame-Options`,
+  `Referrer-Policy`, `Permissions-Policy`).
+- 33 automated tests (`pytest`) covering crowd-level bucketing logic, gate
   recommendation logic, intent detection and reply composition in the
-  concierge engine, rate limiting behavior, security headers, and full API
-  route behavior including input validation.
+  concierge engine, rate limiting behavior (including cleanup and
+  proxy-header handling), security headers, and full API route behavior
+  including input validation.
 - **Linted and formatted** with [ruff](https://docs.astral.sh/ruff/)
-  (config in `backend/pyproject.toml`), enforced automatically by CI
+  (config in `backend/ruff.toml`), enforced automatically by CI
   (`.github/workflows/ci.yml`) on every push and pull request — lint,
   format check, and the full test suite all have to pass.
 
@@ -109,6 +144,9 @@ without spinning up HTTP.
 
 - Plain HTML/CSS/JS — deliberately no build step, so anyone can open
   `index.html` directly against a running backend with no `npm install`.
+- **Auto-detects its environment**: uses `http://localhost:8000` when run
+  locally and the deployed backend URL in production, with no manual
+  editing required between the two.
 - Live gate dashboard rendered as capacity gauges, auto-refreshing every 15s.
 - Language selector (8 languages) and accessibility-need selector, both fed
   straight into the chat and accessibility API calls.
@@ -131,18 +169,20 @@ uvicorn app.main:app --reload --port 8000
 No `.env` file, signup, or configuration of any kind is needed — every
 endpoint, including `/api/chat`, works immediately.
 
-**Tests**
+**Tests and linting**
 ```bash
 cd backend
+pip install -r requirements-dev.txt
 pytest -v
+ruff check .
+ruff format --check .
 ```
 
 **Frontend**
 Open `frontend/index.html` directly in a browser, or serve it with any
 static file server (e.g. `python -m http.server 5500` from the `frontend/`
-folder). It talks to the backend at `http://localhost:8000` by default;
-override with `window.FAN_CONCIERGE_API_BASE` if the backend is hosted
-elsewhere.
+folder). It automatically talks to `http://localhost:8000` when run
+locally.
 
 ## Deploying on Vercel
 
@@ -169,22 +209,17 @@ On [vercel.com](https://vercel.com):
 1. **Add New Project** again, same repo.
 2. Under **Root Directory**, select `frontend`.
 3. Framework preset: **Other** (static site) — no build command needed.
-4. Before deploying, point the frontend at your backend URL. Either:
-   - Edit `frontend/js/api.js` and hardcode `BASE_URL`, or
-   - Add one line before the other scripts in `frontend/index.html`:
-     ```html
-     <script>window.FAN_CONCIERGE_API_BASE = "https://your-backend.vercel.app";</script>
-     ```
-5. Deploy. Your frontend URL (e.g. `https://your-frontend.vercel.app`) is
-   the link to share.
+4. Deploy. The frontend auto-detects it's running in production and
+   switches its backend URL automatically — no manual edit needed.
+5. Your frontend URL (e.g. `https://your-frontend.vercel.app`) is the link
+   to share.
 
 ### 3. Allow the frontend origin
 
 Once you know your frontend's Vercel URL, add it to the backend's CORS
-allow-list — either by setting an `ALLOWED_ORIGINS` environment variable on
-the backend Vercel project (comma-separated list of origins), or by editing
-the default in `backend/app/core/config.py`. Redeploy the backend after
-either change.
+allow-list by setting an `ALLOWED_ORIGINS` environment variable on the
+backend Vercel project (comma-separated list of origins, no trailing
+slash), then redeploy the backend.
 
 That's the whole deployment — no API keys, no secrets, no third-party
 accounts beyond Vercel and GitHub.
@@ -202,9 +237,13 @@ accounts beyond Vercel and GitHub.
   stadium feed is available for a hackathon submission. It's built so a real
   IoT/analytics feed can be substituted behind the same `get_crowd_status()`
   function.
+- **Rate limiting is in-memory and single-process** by design — appropriate
+  for this deployment's scale. The `RateLimiter.is_allowed(key)` interface
+  is what a Redis-backed implementation would expose if this were ever
+  scaled across multiple processes, so swapping the backend wouldn't change
+  any calling code.
 - **Eight languages** are supported as a representative sample of FIFA World
-  Cup 2026's expected fan base (English, Spanish, Portuguese, French, Hindi,
-  Arabic, German, Japanese); adding more is a one-line change to the
+  Cup 2026's expected fan base; adding more is a one-line change to the
   `Language` enum and the phrase dictionaries in `concierge_engine.py`.
 - **The concierge engine uses keyword-based intent matching**, not
   freeform language understanding. It correctly handles the common fan
@@ -213,16 +252,21 @@ accounts beyond Vercel and GitHub.
   won't parse arbitrarily-phrased open-ended questions. This trade-off is
   deliberate: full functionality with zero external dependencies, rather
   than depending on any third-party service being available or configured.
+- **Transportation, sustainability, and operational intelligence** (three
+  of the eight listed challenge areas) are out of scope for this
+  submission by choice, not oversight — the Clean Architecture layering
+  means a `transport_service.py` or `sustainability_service.py` could be
+  added following the exact same pattern as `crowd_service.py` without
+  touching existing code.
 - **No user accounts or persistence** — this is a stateless, session-less
   concierge suited to walk-up kiosk or personal-phone use during a single
   matchday visit, which matches how most fans would actually use it.
 
 ## Tech stack
 
-- **Backend:** Python, FastAPI, Pydantic v2, pytest, ruff (lint/format)
-- **Frontend:** HTML, CSS, vanilla JavaScript (no framework/build step)
-- **CI:** GitHub Actions — lint, format check, and tests on every push/PR
-- **Deployment:** Vercel (serverless Python + static hosting)
+- **Backend:** Python, Pydantic v2, pytest, ruff
+- **Frontend:** HTML, CSS, vanilla JavaScript
+- **Deployment:** Vercel 
 
 ## Further reading
 
